@@ -30,6 +30,14 @@ enum ContentStatus {
   cancelled
 }
 
+enum ScheduledPostStatus {
+  scheduled
+  publishing
+  published
+  failed
+  cancelled
+}
+
 model User {
   id String @id @default(cuid())
   email String @unique
@@ -50,10 +58,11 @@ model User {
 model BrandProfile {
   id String @id @default(cuid())
   userId String @unique
-  brandName String?
+  name String?
   niche String?
+  brandVoice String?
+  language String?
   audience String?
-  voice String?
   goals Json?
   contentPillars Json?
   postingFrequency Int?
@@ -64,27 +73,35 @@ model BrandProfile {
 model InstagramAccount {
   id String @id @default(cuid())
   userId String
-  instagramUserId String @unique
+  igUserId String
   username String?
-  accessToken String?
+  accessTokenEncrypted String?
+  tokenExpiresAt DateTime?
   profileImageUrl String?
   connectionStatus ConnectionStatus @default(connected)
   lastSyncAt DateTime?
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   contents Content[]
+  scheduledPosts ScheduledPost[]
+
+  @@unique([userId, igUserId])
 }
 
 model Content {
   id String @id @default(cuid())
   userId String
   instagramAccountId String?
+  topic String?
+  hook String?
   title String?
   caption String?
-  mediaUrl String?
+  hashtags String[]
+  mediaUrls String[]
   type ContentType @default(image)
   status ContentStatus @default(draft)
   aiGenerated Boolean @default(false)
+  qualityScore Float?
   scheduledAt DateTime?
   publishedAt DateTime?
   externalPostId String?
@@ -93,6 +110,25 @@ model Content {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   instagramAccount InstagramAccount? @relation(fields: [instagramAccountId], references: [id], onDelete: SetNull)
+  scheduledPost ScheduledPost?
+}
+
+model ScheduledPost {
+  id String @id @default(cuid())
+  contentId String @unique
+  instagramAccountId String
+  scheduledAt DateTime
+  jobId String @unique
+  status ScheduledPostStatus @default(scheduled)
+  attemptCount Int @default(0)
+  errorMessage String?
+  publishedAt DateTime?
+  externalPostId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  instagramAccount InstagramAccount @relation(fields: [instagramAccountId], references: [id], onDelete: Cascade)
 }
 
 model AIRecommendation {
@@ -125,11 +161,12 @@ model Usage {
 model AutomationSettings {
   id String @id @default(cuid())
   userId String @unique
+  enabled Boolean @default(false)
   mode String @default("manual")
-  autopilotEnabled Boolean @default(false)
-  autoPublish Boolean @default(false)
-  approvalRequired Boolean @default(true)
-  postingFrequency Int @default(3)
+  postsPerWeek Int @default(3)
+  autoApproveEducational Boolean @default(false)
+  autoApprovePromotional Boolean @default(false)
+  requireApprovalSensitive Boolean @default(true)
   lastRunAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -141,6 +178,7 @@ model AuditLog {
   id String @id @default(cuid())
   userId String
   action String
+  status String?
   details Json?
   createdAt DateTime @default(now())
 
