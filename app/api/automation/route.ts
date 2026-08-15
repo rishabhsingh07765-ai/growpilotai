@@ -23,7 +23,7 @@ export async function PATCH(req: Request) {
     where: { userId: u.id },
     update: {
       enabled: !!d.enabled,
-      mode: ['manual','assisted','autopilot'].includes(d.mode) ? d.mode : 'assisted',
+      mode: ['manual', 'assisted', 'autopilot'].includes(d.mode) ? d.mode : 'assisted',
       postsPerWeek: Math.max(1, Math.min(14, Number(d.postsPerWeek || 3))),
       autoApproveEducational: !!d.autoApproveEducational,
       autoApprovePromotional: !!d.autoApprovePromotional,
@@ -31,6 +31,6 @@ export async function PATCH(req: Request) {
     },
     create: { userId: u.id },
   });
-  await db.auditLog.create({ data: { userId: u.id, action: settings.enabled ? 'AUTOPILOT_ENABLED' : 'AUTOPILOT_UPDATED', details: settings } });
+  await db.auditLog.create({ data: { userId: u.id, action: settings.enabled ? 'AUTOPILOT_ENABLED' : 'AUTOPILOT_UPDATED', status: 'success', details: settings } });
   return NextResponse.json({ settings });
 }
