@@ -12,11 +12,13 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "latest",
     "@prisma/client": "latest",
     "bcryptjs": "latest",
     "jose": "latest",
     "lucide-react": "latest",
     "next": "latest",
+    "pg": "latest",
     "react": "latest",
     "react-dom": "latest",
     "zod": "latest"
@@ -24,12 +26,13 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "latest",
+    "@types/pg": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "autoprefixer": "latest",
     "postcss": "latest",
-    "prisma": "latest",
     "tailwindcss": "latest",
+    "prisma": "latest",
     "typescript": "latest"
   }
 }
