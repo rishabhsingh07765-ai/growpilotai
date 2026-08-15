@@ -1,0 +1,1 @@
+import {NextResponse} from 'next/server';import {getCurrentUser} from '../../../../lib/auth';export async function GET(){const u=await getCurrentUser();return NextResponse.json({user:u?{id:u.id,name:u.name,email:u.email,brandProfile:u.brandProfile,instagramAccounts:u.instagramAccounts}:null})}

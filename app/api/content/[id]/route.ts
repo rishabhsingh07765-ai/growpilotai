@@ -1,0 +1,3 @@
+import {NextResponse} from 'next/server';import {getCurrentUser} from '../../../../lib/auth';import {db} from '../../../../lib/db';
+export async function PATCH(req:Request,{params}:{params:Promise<{id:string}>}){const u=await getCurrentUser();if(!u)return NextResponse.json({error:'Unauthorized'},{status:401});const {id}=await params;const d=await req.json();const c=await db.content.updateMany({where:{id,userId:u.id},data:d});return NextResponse.json({ok:c.count===1})}
+export async function DELETE(req:Request,{params}:{params:Promise<{id:string}>}){const u=await getCurrentUser();if(!u)return NextResponse.json({error:'Unauthorized'},{status:401});const {id}=await params;await db.content.deleteMany({where:{id,userId:u.id}});return NextResponse.json({ok:true})}
