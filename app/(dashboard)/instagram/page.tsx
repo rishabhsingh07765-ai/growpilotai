@@ -1,2 +1,46 @@
-'use client';import {useEffect,useState} from 'react';import Topbar from '../../../components/topbar';import {Camera,Link2,Unlink,ShieldCheck} from 'lucide-react';
-export default function InstagramPage(){const [accounts,setAccounts]=useState<any[]>([]),[error,setError]=useState('');useEffect(()=>{fetch('/api/auth/me').then(r=>r.json()).then(d=>setAccounts(d.user?.instagramAccounts||[]));const p=new URLSearchParams(location.search);if(p.get('error'))setError(p.get('error')||'Connection failed')},[]);async function disconnect(id:string){await fetch('/api/Camera/disconnect',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id})});setAccounts(a=>a.filter(x=>x.id!==id))}return <><Topbar title="Camera"/><div className="p-6 md:p-8 max-w-4xl space-y-6"><div className="card p-6"><div className="flex items-start gap-4"><div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-orange-400 flex items-center justify-center"><Camera/></div><div className="flex-1"><h2 className="font-semibold text-lg">Connect Camera</h2><p className="mt-1 text-sm text-slate-500">Use Meta's official authorization. GrowPilot never asks for or stores your Camera password.</p></div><a href="/api/Camera/connect" className="primary"><Link2 size={16}/> Connect</a></div>{error&&<div className="mt-5 rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-300">{error}</div>}</div>{accounts.map(a=><div className="card p-5 flex items-center justify-between" key={a.id}><div><div className="font-medium">{a.username||'Camera account'}</div><div className="text-xs text-emerald-400 mt-1">{a.connectionStatus}</div></div><button onClick={()=>disconnect(a.id)} className="secondary px-4 py-2 text-sm"><Unlink size={15}/> Disconnect</button></div>)}<div className="card p-6"><div className="flex gap-3"><ShieldCheck className="text-emerald-400"/><div><h3 className="font-semibold">Security</h3><p className="mt-2 text-sm text-slate-500">Access tokens are intended to stay server-side and encrypted at rest. Configure production secrets before connecting real accounts.</p></div></div></div></div></>}
+'use client';
+import { useEffect, useState } from 'react';
+import Topbar from '../../../components/topbar';
+import { Camera, Link2, Unlink, ShieldCheck } from 'lucide-react';
+
+export default function InstagramPage() {
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.json()).then(d => setAccounts(d.user?.instagramAccounts || []));
+    const p = new URLSearchParams(location.search);
+    if (p.get('error')) setError(p.get('error') || 'Connection failed');
+  }, []);
+
+  async function disconnect(id: string) {
+    const r = await fetch('/api/instagram/disconnect', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    if (r.ok) setAccounts(a => a.map(x => x.id === id ? { ...x, connectionStatus: 'disconnected' } : x));
+  }
+
+  return <>
+    <Topbar title="Instagram" />
+    <div className="p-6 md:p-8 max-w-4xl space-y-6">
+      <div className="card p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-orange-400 flex items-center justify-center"><Camera /></div>
+          <div className="flex-1">
+            <h2 className="font-semibold text-lg">Connect Instagram</h2>
+            <p className="mt-1 text-sm text-slate-500">Use Meta's official authorization. GrowPilot never asks for or stores your Instagram password.</p>
+          </div>
+          <a href="/api/instagram/connect" className="primary"><Link2 size={16} /> Connect</a>
+        </div>
+        {error && <div className="mt-5 rounded-xl bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-300">{error}</div>}
+      </div>
+      {accounts.map(a => <div className="card p-5 flex items-center justify-between" key={a.id}>
+        <div><div className="font-medium">{a.username || 'Instagram account'}</div><div className="text-xs text-emerald-400 mt-1">{a.connectionStatus}</div></div>
+        <button onClick={() => disconnect(a.id)} className="secondary px-4 py-2 text-sm"><Unlink size={15} /> Disconnect</button>
+      </div>)}
+      <div className="card p-6"><div className="flex gap-3"><ShieldCheck className="text-emerald-400" /><div><h3 className="font-semibold">Security</h3><p className="mt-2 text-sm text-slate-500">Access tokens stay server-side and are encrypted at rest. Configure production secrets before connecting real accounts.</p></div></div></div>
+    </div>
+  </>;
+}
